@@ -15,36 +15,35 @@ export const Colors = {
     backgroundSelected: '#E0E1E6',
     textSecondary: '#60646C',
   },
+  // Ark One design system — dark only, shipping dark first.
   dark: {
-    text: '#ffffff',
-    background: '#000000',
-    backgroundElement: '#212225',
-    backgroundSelected: '#2E3135',
-    textSecondary: '#B0B4BA',
+    text: '#FFFFFF', // --fg
+    background: '#0A0A0B', // --bg
+    backgroundElement: '#0F0F13', // --surface
+    backgroundSelected: '#111116', // --surface-elevated
+    textSecondary: '#A1A1AA', // --fg-muted
   },
 } as const;
 
 export type ThemeColor = keyof typeof Colors.light & keyof typeof Colors.dark;
 
+// Ark One brand faces. Native names require expo-font registration to render;
+// otherwise RN falls back to the system face. Web reads them from `global.css`.
 export const Fonts = Platform.select({
   ios: {
-    /** iOS `UIFontDescriptorSystemDesignDefault` */
-    sans: 'system-ui',
-    /** iOS `UIFontDescriptorSystemDesignSerif` */
+    sans: 'Plus Jakarta Sans',
     serif: 'ui-serif',
-    /** iOS `UIFontDescriptorSystemDesignRounded` */
     rounded: 'ui-rounded',
-    /** iOS `UIFontDescriptorSystemDesignMonospaced` */
-    mono: 'ui-monospace',
+    mono: 'JetBrains Mono',
   },
   default: {
-    sans: 'normal',
+    sans: 'Plus Jakarta Sans',
     serif: 'serif',
     rounded: 'normal',
-    mono: 'monospace',
+    mono: 'JetBrains Mono',
   },
   web: {
-    sans: 'var(--font-display)',
+    sans: 'var(--font-sans)',
     serif: 'var(--font-serif)',
     rounded: 'var(--font-rounded)',
     mono: 'var(--font-mono)',

@@ -1,44 +1,61 @@
 import React, { createContext, useContext, useMemo } from 'react';
-import { useColorScheme } from 'react-native';
 
-import { darkColors, lightColors, radii, spacing, typography } from './tokens';
+import {
+  brand,
+  darkColors,
+  lightColors,
+  motion,
+  radii,
+  shadows,
+  spacing,
+  typography,
+} from './tokens';
 import type { ColorScheme, Theme } from './types';
 
-// ─── Default theme (light) ────────────────────────────────────────────────────
+// ─── Default theme (dark) ─────────────────────────────────────────────────────
+// The Ark One design system is dark-only; we ship dark first.
 
-const defaultTheme: Theme = {
-  scheme: 'light',
-  colors: lightColors,
+const darkTheme: Theme = {
+  scheme: 'dark',
+  colors: darkColors,
+  brand,
   spacing,
   radii,
   typography,
+  shadows,
+  motion,
 };
 
 // ─── Context ──────────────────────────────────────────────────────────────────
 
-export const ThemeContext = createContext<Theme>(defaultTheme);
+export const ThemeContext = createContext<Theme>(darkTheme);
 
 // ─── Provider ─────────────────────────────────────────────────────────────────
 
 export interface ThemeProviderProps {
   children: React.ReactNode;
-  /** Override the detected color scheme. Useful in tests and Storybook. */
+  /**
+   * Override the resolved color scheme. Useful in tests and Storybook.
+   *
+   * Light mode is deferred — its palette currently aliases dark — so without an
+   * override the app always renders the dark theme regardless of system setting.
+   */
   forcedScheme?: ColorScheme;
 }
 
 export function ThemeProvider({ children, forcedScheme }: ThemeProviderProps) {
-  const systemScheme = useColorScheme();
-
-  const scheme: ColorScheme =
-    forcedScheme ?? (systemScheme === 'dark' ? 'dark' : 'light');
+  const scheme: ColorScheme = forcedScheme ?? 'dark';
 
   const theme = useMemo<Theme>(
     () => ({
       scheme,
-      colors: scheme === 'dark' ? darkColors : lightColors,
+      colors: scheme === 'light' ? lightColors : darkColors,
+      brand,
       spacing,
       radii,
       typography,
+      shadows,
+      motion,
     }),
     [scheme],
   );
