@@ -1,9 +1,5 @@
-import { Text, View } from 'react-native';
+import { PlaceholderScreen } from '@/components/placeholder-screen';
 
 export default function HistoryScreen() {
-  return (
-    <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-      <Text>History</Text>
-    </View>
-  );
+  return <PlaceholderScreen title="History" subtitle="Tab · transactions" edges={['top']} />;
 }

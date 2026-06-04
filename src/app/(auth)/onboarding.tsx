@@ -1,9 +1,5 @@
-import { Text, View } from 'react-native';
+import { PlaceholderScreen } from '@/components/placeholder-screen';
 
 export default function OnboardingScreen() {
-  return (
-    <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-      <Text>Onboarding</Text>
-    </View>
-  );
+  return <PlaceholderScreen title="Onboarding" subtitle="Auth · welcome & setup" />;
 }

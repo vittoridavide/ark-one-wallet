@@ -35,5 +35,8 @@ export type { AmountKeypadProps } from './amount-keypad';
 export { TopNav } from './top-nav';
 export type { TopNavProps } from './top-nav';
 
+export { BottomNav } from './bottom-nav';
+export type { BottomNavItem, BottomNavProps } from './bottom-nav';
+
 export { Screen } from './screen';
 export type { ScreenProps } from './screen';

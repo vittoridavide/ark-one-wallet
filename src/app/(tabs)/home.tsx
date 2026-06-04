@@ -1,9 +1,5 @@
-import { Text, View } from 'react-native';
+import { PlaceholderScreen } from '@/components/placeholder-screen';
 
 export default function HomeScreen() {
-  return (
-    <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-      <Text>Home</Text>
-    </View>
-  );
+  return <PlaceholderScreen title="Home" subtitle="Tab · dashboard" edges={['top']} />;
 }

@@ -1,9 +1,5 @@
-import { Text, View } from 'react-native';
+import { PlaceholderScreen } from '@/components/placeholder-screen';
 
 export default function ImportScreen() {
-  return (
-    <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-      <Text>Import</Text>
-    </View>
-  );
+  return <PlaceholderScreen title="Import" subtitle="Auth · restore from seed" />;
 }

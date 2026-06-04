@@ -1,9 +1,5 @@
-import { Text, View } from 'react-native';
+import { PlaceholderScreen } from '@/components/placeholder-screen';
 
 export default function LockScreen() {
-  return (
-    <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-      <Text>Lock</Text>
-    </View>
-  );
+  return <PlaceholderScreen title="Lock" subtitle="Auth · PIN / biometric" />;
 }

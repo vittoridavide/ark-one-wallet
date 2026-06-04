@@ -1,9 +1,5 @@
-import { Text, View } from 'react-native';
+import { PlaceholderScreen } from '@/components/placeholder-screen';
 
 export default function SettingsScreen() {
-  return (
-    <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-      <Text>Settings</Text>
-    </View>
-  );
+  return <PlaceholderScreen title="Settings" subtitle="Tab · security & backup" edges={['top']} />;
 }
