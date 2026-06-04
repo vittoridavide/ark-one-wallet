@@ -137,9 +137,14 @@ export type Radii = typeof radii;
 // Plus Jakarta Sans (400/500/600/700/800) is the only UI face. JetBrains Mono
 // handles addresses, TXIDs, sat amounts, and ₿ values.
 //
-// NOTE (native): these family names require the fonts to be registered with
-// expo-font before they render on iOS/Android — otherwise RN falls back to the
-// system face. Web reads them via the CSS vars in `global.css`.
+// Font resolution differs by platform — always select a family + weight via
+// `fontFor(face, weight)` rather than reading `families.*` + `fontWeight`
+// directly:
+//   • Web    — one family (CSS var from `global.css`) + numeric `fontWeight`.
+//   • Native — RN can't pick a weight from a single custom family, so each
+//              weight is a separate registered family (`PlusJakartaSans_700Bold`,
+//              …). `fontFor` returns the right family and omits `fontWeight`.
+// The native family names below MUST match the `useFonts` keys in `_layout.tsx`.
 
 export const fontFamilies = Platform.select({
   ios: {
@@ -194,6 +199,47 @@ export const fontWeights = {
 } as const;
 
 export type FontWeights = typeof fontWeights;
+export type FontWeightToken = keyof typeof fontWeights;
+export type FontFace = 'sans' | 'mono';
+
+// Native per-weight family names. Each MUST equal a key passed to `useFonts`
+// in `_layout.tsx` (which equals the `@expo-google-fonts/*` export name).
+const sansNativeFamily: Record<FontWeightToken, string> = {
+  regular: 'PlusJakartaSans_400Regular',
+  medium: 'PlusJakartaSans_500Medium',
+  semibold: 'PlusJakartaSans_600SemiBold',
+  bold: 'PlusJakartaSans_700Bold',
+  extrabold: 'PlusJakartaSans_800ExtraBold',
+};
+
+// JetBrains Mono only ships 400/500 in this kit — heavier requests fall back
+// to Medium so a missing family never silently reverts to the system font.
+const monoNativeFamily: Record<FontWeightToken, string> = {
+  regular: 'JetBrainsMono_400Regular',
+  medium: 'JetBrainsMono_500Medium',
+  semibold: 'JetBrainsMono_500Medium',
+  bold: 'JetBrainsMono_500Medium',
+  extrabold: 'JetBrainsMono_500Medium',
+};
+
+export interface FontStyleFragment {
+  fontFamily: string;
+  fontWeight?: (typeof fontWeights)[FontWeightToken];
+}
+
+/**
+ * Resolve a `{ fontFamily, fontWeight? }` style fragment for a face + weight.
+ * Spread it into a text style — never set `fontFamily`/`fontWeight` by hand.
+ *
+ * @example
+ * <Text style={[fontFor('sans', 'bold'), { fontSize: 15 }]}>Send</Text>
+ */
+export function fontFor(face: FontFace, weight: FontWeightToken = 'regular'): FontStyleFragment {
+  if (Platform.OS === 'web') {
+    return { fontFamily: fontFamilies[face], fontWeight: fontWeights[weight] };
+  }
+  return { fontFamily: (face === 'mono' ? monoNativeFamily : sansNativeFamily)[weight] };
+}
 
 /**
  * Letter spacing / tracking, in **em** (matching the design's `--tr-*` tokens).
