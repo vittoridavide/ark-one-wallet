@@ -1,32 +1,95 @@
-import { generateMnemonic, Wallet, type WalletLike } from '@secondts/bark-react-native';
+import {
+  generateMnemonic,
+  validateMnemonic,
+  Wallet,
+  type WalletLike,
+} from '@secondts/bark-react-native';
 
 import type { SendPaymentParams, SendPaymentResult, WalletSnapshot } from '@/domain';
+import { clearMnemonic, hasMnemonic, loadMnemonic, storeMnemonic } from '@/lib';
 
 import { createBarkConfig } from './bark-config';
 import { mapBarkBalance, mapBarkMovement, mapLightningSendStatus } from './bark-mappers';
-import { getBarkStoragePaths, writeStoredMnemonic } from './bark-storage';
+import {
+  deleteLegacyMnemonic,
+  deleteWalletData,
+  getWalletDataPath,
+  readLegacyMnemonic,
+} from './bark-storage';
 
 export type ArkOneWallet = WalletLike;
 
-export async function createWallet(): Promise<ArkOneWallet> {
-  const { dataPath } = getBarkStoragePaths();
-  const mnemonic = generateMnemonic();
-  const wallet = await Wallet.create(mnemonic, createBarkConfig(), dataPath, false);
-  writeStoredMnemonic(mnemonic);
+/** Generate a fresh 12-word BIP39 mnemonic (bark / audited Rust CSPRNG). */
+export function generateSeed(): string {
+  return generateMnemonic();
+}
+
+/** Validate a BIP39 mnemonic (checksum + wordlist). */
+export function validateSeed(mnemonic: string): boolean {
+  return validateMnemonic(mnemonic.trim());
+}
+
+/** Create a bark wallet from a known mnemonic and persist it to the secure element. */
+export async function createWalletFromSeed(mnemonic: string): Promise<ArkOneWallet> {
+  const normalized = mnemonic.trim();
+  if (!validateMnemonic(normalized)) {
+    throw new Error('Invalid recovery phrase');
+  }
+  const wallet = await Wallet.create(normalized, createBarkConfig(), getWalletDataPath(), false);
+  await storeMnemonic(normalized);
   return wallet;
 }
 
+/** Generate a new seed, create the wallet, and store the seed securely. */
+export async function createWallet(): Promise<ArkOneWallet> {
+  return createWalletFromSeed(generateMnemonic());
+}
+
+/** Open an existing wallet from a mnemonic. No persistence side effects. */
 export async function openWallet(mnemonic: string): Promise<ArkOneWallet> {
-  const { dataPath } = getBarkStoragePaths();
-  return Wallet.open(mnemonic, createBarkConfig(), dataPath);
+  return Wallet.open(mnemonic.trim(), createBarkConfig(), getWalletDataPath());
+}
+
+/** Restore a wallet from a user-supplied mnemonic and persist it securely. */
+export async function importWallet(mnemonic: string): Promise<ArkOneWallet> {
+  const normalized = mnemonic.trim();
+  if (!validateMnemonic(normalized)) {
+    throw new Error('Invalid recovery phrase');
+  }
+  const wallet = await openWallet(normalized);
+  await storeMnemonic(normalized);
+  return wallet;
+}
+
+/** Remove the wallet: wipe the stored seed and the local DB. */
+export async function removeWallet(): Promise<void> {
+  await clearMnemonic();
+  deleteWalletData();
+}
+
+/** One-time migration of the legacy plaintext mnemonic file into secure storage. */
+async function migrateLegacyMnemonic(): Promise<void> {
+  if (await hasMnemonic()) {
+    return;
+  }
+  const legacy = await readLegacyMnemonic();
+  if (!legacy || !validateMnemonic(legacy)) {
+    return;
+  }
+  // storeMnemonic requires enrolled biometrics; only drop the plaintext on success.
+  await storeMnemonic(legacy);
+  deleteLegacyMnemonic();
 }
 
 export async function loadOrCreateWallet(): Promise<ArkOneWallet> {
-  const { dataPath, mnemonicFile } = getBarkStoragePaths();
+  await migrateLegacyMnemonic();
 
-  if (mnemonicFile.exists) {
-    const mnemonic = await mnemonicFile.text();
-    return Wallet.open(mnemonic, createBarkConfig(), dataPath);
+  if (await hasMnemonic()) {
+    const mnemonic = await loadMnemonic();
+    if (!mnemonic) {
+      throw new Error('Unable to read your stored wallet');
+    }
+    return openWallet(mnemonic);
   }
 
   return createWallet();

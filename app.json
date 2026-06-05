@@ -26,6 +26,13 @@
     "plugins": [
       "expo-font",
       "@secondts/bark-react-native",
+      [
+        "expo-secure-store",
+        {
+          "configureAndroidBackup": true,
+          "faceIDPermission": "Allow Ark One to use Face ID to unlock your wallet."
+        }
+      ],
       ["expo-router", { "root": "src/app" }],
       [
         "expo-splash-screen",
