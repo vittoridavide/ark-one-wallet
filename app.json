@@ -25,6 +25,7 @@
     },
     "plugins": [
       "expo-font",
+      "@secondts/bark-react-native",
       ["expo-router", { "root": "src/app" }],
       [
         "expo-splash-screen",

@@ -1,2 +1,3 @@
-// barrel – export domain types and service interfaces here
-export {};
+export type * from './payment';
+export type * from './transaction';
+export type * from './wallet';
